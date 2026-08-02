@@ -60,15 +60,22 @@ Neither node touches the internet at any point.
 
 All figures below are measured, not taken from a datasheet.
 
-| Test | Distance | RSSI | SNR | Packet loss |
+| Test | Environment | Distance | RSSI at limit | Packet loss |
 |---|---|---|---|---|
-| Indoor bench | ~3 m | −52 to −62 dBm | +12 to +13 dB | 0 / 19 |
-| Sustained link | ~5 m | −48 to −62 dBm | +12 to +13 dB | 0 / 82 |
-| Urban NLOS | ~300 m | −102 dBm | — | link edge, CRC failures |
+| Bench | Indoor, ~3 m | 3 m | −55 dBm | 0 / 19 |
+| Sustained | Indoor, ~5 m | 5 m | −48 to −62 dBm | 0 / 82 |
+| Urban NLOS | Through a multi-storey building | 300 m | −102 dBm | link failure |
+| Road path | Predominantly line of sight | **693 m** | −110 dBm | link failure |
 
-The 300 m test was deliberately hostile: transmitter on an upper floor, receiver inside a shopping complex at ground level, with a stairwell and several intervening retail units in the path. **No line of sight at any point.** The link degraded by roughly 47 dB relative to bench conditions, of which an estimated 40–60 dB is structural attenuation rather than distance.
+The 300 m test was deliberately hostile: transmitter on an upper floor, receiver inside a shopping complex at ground level, with a stairwell and several intervening retail units in the path. **No line of sight at any point.**
 
-Line-of-sight performance was not measured. Based on the link budget above, unobstructed range would be expected in the 1.5–2 km region at ground level and considerably further with elevation — but those are projections, not results, and are labelled as such throughout.
+The 693 m test followed a road with two curves partially obstructing the path, both nodes at ground level. In both field tests the receiver was carried outward until the link failed, so these are measured limits rather than points at which testing stopped.
+
+**The comparison between them is the interesting result.** Free-space path loss from 300 m to 693 m accounts for 7.3 dB. The measured difference was 8 dB. Over more than twice the distance, the road path added essentially nothing beyond geometric spreading — while the building imposed an estimated 40–60 dB penalty. Environment, not distance, governs range here.
+
+One anomaly is recorded honestly rather than smoothed over: both tests failed 13–21 dB above the theoretical SF7 demodulation floor of −123 dBm. The consistency across two very different environments points to an elevated ambient noise floor rather than a hardware limit. A spreading factor sweep would settle it, and is the top item on the follow-on list.
+
+Clear line-of-sight performance remains unmeasured, and no figure is claimed for it.
 
 Full methodology, obstruction analysis and limitations: **[docs/range-test.md](docs/range-test.md)**
 
