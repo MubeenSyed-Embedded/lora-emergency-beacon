@@ -20,6 +20,30 @@ The second probe ([`firmware/00_hardware_id`](../firmware/00_hardware_id)) sweep
 
 What actually settled it was mundane: **the factory firmware's OLED splash screen reads "Heltec."**
 
+### Confirming the radio chip
+
+The board identity did not settle which radio was fitted. The seller's listing specified **SX1276**, which conflicted with the SX1262 driver initialising successfully.
+
+The listing was wrong. Heltec V2 used SX1276; V3 uses SX1262. Sellers frequently reuse V2 product descriptions, and this appears to be common enough that it is worth checking rather than trusting.
+
+[`firmware/00_hardware_id/radio_id.ino`](../firmware/00_hardware_id/radio_id.ino) resolves it with four independent tests:
+
+| Test | What it checks | Result |
+|---|---|---|
+| BUSY pin | SX126x drives GPIO 13; SX127x has no BUSY pin | Stable low, went high on reset, settled — driven |
+| Version register `0x42` | Every SX1276/77/78/79 returns `0x12` | Returned `0xAA` — not SX127x |
+| Driver init | RadioLib verifies chip identity during `begin()` | SX1262 succeeded; SX1276 returned −2, chip not found |
+| Power ceiling | SX1262 accepts 22 dBm, SX1276 does not | Accepted at init |
+
+**Verdict: SX1262.** The driver test is decisive on its own — RadioLib does not guess at chip identity.
+
+Two caveats on that sketch, recorded so the output is read correctly:
+
+- The raw SPI register write/read test returns a near-miss (`0xA5` written, `0x25` read). The chip responds, but the sketch's hand-rolled SPI framing does not honour the SX1262 BUSY handshake between commands. That test's result should be disregarded.
+- The transmit-power test runs after the driver test has already probed the chip with the wrong driver, leaving it in an indeterminate state. Its result is also unreliable.
+
+Both flawed tests scored *against* SX1262 and it still won. The real margin is wider than the sketch reports.
+
 ### What differed from the plan
 
 | | Documentation assumed | Actual hardware |
@@ -122,6 +146,10 @@ If upload stalls at `Connecting......`:
 2. Press and release **RST**
 3. Release **PRG**
 4. Upload
+
+### There is no SD card slot
+
+The V3 has no onboard storage beyond internal flash. The V2 did not either; the LilyGO T3-S3, which this board is easily confused with, does. Adding storage requires an external module on the SPI bus — which is already shared with the LoRa radio, so chip-select handling needs care.
 
 ### Antenna
 
