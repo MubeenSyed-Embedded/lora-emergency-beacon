@@ -255,7 +255,7 @@ This matters beyond a demo. A relay node that goes deaf while updating a display
 
 **Muhammad Mubeen Syed**
 Electrical Engineering, Ghulam Ishaq Khan Institute (GIKI), Pakistan
-Captain, Team Techno · Microsoft Learn Student Ambassador
+Captain, Team Techno 
 
 Built in a single session, 1 August 2026.
 
