@@ -173,7 +173,7 @@ If upload stalls at `Connecting......`: hold **PRG**, press and release **RST**,
 
 ```
 firmware/
-  00_hardware_id/        board identification probe (see below)
+  00_hardware_id/        board and radio identification probes (see below)
   01_link_test/          minimal TX and RX, for verifying a new pair of boards
   02_survivor_beacon/    Node 1 — WiFi AP, captive portal, form, LoRa TX/RX
   03_rescue_base/        Node 2 — LoRa RX/TX, dashboard, reply interface
@@ -204,6 +204,8 @@ The board was an ESP32-S3 — but which one? Several manufacturers ship visually
 
 It came back empty on every candidate, which was itself informative: two independent buses finding nothing meant the pin map was wrong, not the hardware. The board turned out to be a **Heltec WiFi LoRa 32 V3**, whose OLED is powered behind a `Vext` control pin (GPIO 36, active LOW) and is therefore invisible to an I²C scan until that rail is enabled.
 
+The radio was separately confirmed as an **SX1262** by [`firmware/00_hardware_id/radio_id.ino`](firmware/00_hardware_id), which runs four independent checks: BUSY line behaviour, the SX127x version register at `0x42`, driver-level initialisation, and transmit power ceiling. The seller's listing specified SX1276 — a common error, since Heltec V2 used that chip and V3 does not.
+
 ### Blocking reads made the radio deaf
 
 The first receiver used RadioLib's blocking `receive()`. It dropped exactly every second packet:
@@ -231,7 +233,7 @@ This matters beyond a demo. A relay node that goes deaf while updating a display
 - **No encryption.** Messages are transmitted in clear text. Fine for a proof of concept, unacceptable for deployment.
 - **No authentication.** Any device on the frequency with the right sync word can inject packets.
 - **Two nodes only.** No routing, no relaying, no mesh. Range is a single hop.
-- **No persistence.** Messages live in RAM and are lost on reset. The Heltec V3's onboard SD slot is unused.
+- **No persistence.** Messages live in RAM and are lost on reset. The Heltec V3 has no SD slot, so adding storage means an external module or writing to internal flash.
 - **Collision handling is naive.** A random 20–180 ms backoff before transmit, nothing more. This will not scale past a handful of nodes.
 - **No GPS.** Survivor location is whatever they type into the message field.
 - **Single measurement run per test condition.** No repeated trials or statistical averaging.
@@ -242,7 +244,7 @@ This matters beyond a demo. A relay node that goes deaf while updating a display
 ## Where this goes next
 
 - Multi-hop relaying between more than two nodes
-- Message persistence to the onboard SD card, with RSSI and timestamp logging
+- Message persistence with RSSI and timestamp logging, either to internal flash or an external SD module
 - GPS module for automatic survivor positioning
 - Payload encryption
 - Airborne relay node — the actual subject of my final-year project
